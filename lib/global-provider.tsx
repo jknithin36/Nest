@@ -1,5 +1,4 @@
 import React, { createContext, ReactNode, useContext } from "react";
-
 import { getCurrentUser } from "./appwrite";
 import { useAppwrite } from "./useAppwrite";
 
@@ -7,7 +6,7 @@ interface GlobalContextType {
   isLogged: boolean;
   user: User | null;
   loading: boolean;
-  refetch: () => void;
+  refetch: () => Promise<void>; // ✅ No params expected
 }
 
 interface User {
@@ -27,12 +26,17 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const {
     data: user,
     loading,
-    refetch,
+    refetch: rawRefetch,
   } = useAppwrite({
     fn: getCurrentUser,
   });
 
   const isLogged = !!user;
+
+  // ✅ Wrap raw refetch to ignore params
+  const refetch = async () => {
+    await rawRefetch({});
+  };
 
   return (
     <GlobalContext.Provider
